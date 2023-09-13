@@ -49,6 +49,7 @@ typedef unsigned short port_t;
 #define TYPE_RES 0x0004
 #define TYPE_FILE 0x0008
 #define TYPE_ERR 0x0010
+#define TYPE_LOGIN 0x0020
 
 #include <netinet/in.h>
 
@@ -57,6 +58,7 @@ enum cmd
 {
     CMD_UNKNOW,
     CMD_GETLIST = 10,
+    CMD_GETHLIST,
     CMD_GETFILE,
     CMD_NUM_GETFILE,
     CMD_UPLOAD,

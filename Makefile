@@ -6,7 +6,7 @@ srcDIR = ./src
 objDIR = ./obj
 Depend = $(wildcard $(incDIR)/*.h)
 Source = $(wildcard $(srcDIR)/*.c)
-CFLAGS = -I $(incDIR)
+CFLAGS = -I $(incDIR) -static
 
 SER_Source = $(filter-out ./src/cli.c, $(Source))
 Object = $(patsubst $(srcDIR)/%.c, $(objDIR)/%.o, $(SER_Source))
@@ -18,17 +18,17 @@ CLI_Source = $(filter-out ./src/main.c, $(Source))
 all:$(Target) $(Target_CLI)
 
 $(Target_CLI): $(CLI_Source)
-	$(CC) $(CLI_Source) $(CFLAGS) -o $@
+	$(CC) $(CLI_Source) $(CFLAGS) -o $@ -g
 
 
 #MAIN
 $(Target):$(Object)
-	$(CC) $^ -o $@
+	$(CC) $^ -o $@ -g $(CFLAGS)
 	
 
 #OBJ
 $(objDIR)/%.o: $(srcDIR)/%.c $(Depend)
-	$(CC) -c $< -o $@ $(CFLAGS)
+	$(CC) -c $< -o $@ $(CFLAGS) -g -static
 
 .PHONY:clean
 clean:

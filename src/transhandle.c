@@ -91,8 +91,8 @@ int send_err_code(uint64_t errcode, char *msg, thr_dat_t *info)
     header.types = (HEADER_CODE << 32) | TYPE_ERR;
     header.datalen = sizeof(errcode) + strlen(msg) + 1;
 
-    send(info->fd, &header, sizeof(header), MSG_MORE);
-    send(info->fd, &errcode, sizeof(errcode), MSG_MORE);
+    send(info->fd, &header, sizeof(header), 0);
+    send(info->fd, &errcode, sizeof(errcode), 0);
     send(info->fd, msg, header.datalen - sizeof(errcode), 0);
 
     return 0;

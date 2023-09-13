@@ -25,6 +25,8 @@ void *term_task(void *);
 
 static sem_t term_task_sem[2];
 
+static char password[128] = "1234";
+
 int netdisk_main(char *path, char *ip, port_t port)
 {
     int sockfd = sock_init(ip, port);
@@ -108,6 +110,7 @@ int sock_init(char *ip, __uint16_t port)
 void *cli_task(thr_dat_t *info)
 {
     transHeader_t header;
+    int login = 0;
 
     int retv;
 
@@ -118,6 +121,7 @@ void *cli_task(thr_dat_t *info)
     PRINT_MSG("\t%s: %d\n", inet_ntoa(info->cliaddr.sin_addr), ntohs(info->cliaddr.sin_port));
 
     send_msg("\033[32;1mWelcome!\033[0m", info);
+    send_msg("send \"login <password>\" to login", info);
 
     while (1)
     {
@@ -135,6 +139,17 @@ void *cli_task(thr_dat_t *info)
             return NULL;
         default:
             break;
+        }
+        if (!login)
+        {
+            if ((header.types & 0xFFFF) != TYPE_LOGIN)
+                send_msg("\033[31;1mYou're not logged in!\033[0m", info);
+            login = handle_login(&header, recvData, info, password);
+            if (login)
+                send_msg("\033[32;1mlogged in!\033[0m", info);
+            else
+                send_msg("\033[31;1mPassword Error!\033[0m", info);
+            continue;
         }
         // 对命令与数据接收后执行
         switch (header.types & 0xffff)

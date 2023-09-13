@@ -126,8 +126,17 @@ int input(int fd)
     transHeader_t header;
     thr_dat_t info;
     info.fd = fd;
+    if (!strncmp(cmd, "login", 5))
+    {
+        char passwd[128];
+        fgets(passwd, sizeof(passwd), stdin);
+        passwd[strlen(passwd) - 1] = '\0';
+        header.types = (HEADER_CODE << 32) | TYPE_LOGIN;
+        header.datalen = sizeof(passwd);
 
-    if (!strncmp(cmd, "ls", 2))
+        send_data(&header, passwd, &info);
+    }
+    else if (!strcmp(cmd, "ls"))
     {
 
         char data[8] = "GETLIST";
@@ -136,6 +145,16 @@ int input(int fd)
 
         send_data(&header, data, &info);
     }
+    else if (!strcmp(cmd, "lsh"))
+    {
+
+        char data[8] = "GETHLIST";
+        header.types = (HEADER_CODE << 32) | TYPE_CMD;
+        header.datalen = sizeof(data);
+
+        send_data(&header, data, &info);
+    }
+
     else if (!strncmp(cmd, "pwd", 3))
     {
 
@@ -145,7 +164,7 @@ int input(int fd)
 
         send_data(&header, data, &info);
     }
-    else if (!strncmp(cmd, "exit", 4))
+    else if (!strcmp(cmd, "exit"))
     {
 
         char data[8] = "EXIT";
@@ -153,6 +172,10 @@ int input(int fd)
         header.datalen = sizeof(data);
 
         send_data(&header, data, &info);
+    }
+    else if (!strcmp(cmd, "exit!"))
+    {
+        exit(0);
     }
     else if (!strncmp(cmd, "cd", 2))
     {

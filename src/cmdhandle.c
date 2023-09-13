@@ -25,10 +25,6 @@
 // 文件序号表
 static long *filelist[1024] = {NULL};
 
-// 上传与下载许可
-static int upload_permit = 0;
-static int remove_permit = 0;
-
 char file_type(unsigned char type)
 {
     switch (type)
@@ -42,7 +38,10 @@ char file_type(unsigned char type)
     }
 }
 
-int cmd_getlist(thr_dat_t *info)
+// flag 为是否显示隐藏文件，即.开头的文件
+// 0 为显示
+// 1 为不显示
+int cmd_getlist(thr_dat_t *info, int flag)
 {
     DIR *curdir = opendir(info->pwd);
     struct dirent *file;
@@ -55,7 +54,7 @@ int cmd_getlist(thr_dat_t *info)
         goto ERR;
     }
 
-    sprintf(buf, "%s:", info->pwd);
+    sprintf(buf, "-- %s :", info->pwd);
     send_msg(buf, info);
     if (filelist[info->fd] == NULL)
         filelist[info->fd] = malloc(LIST_LEN * sizeof(long));
@@ -69,7 +68,7 @@ int cmd_getlist(thr_dat_t *info)
         file = readdir(curdir);
         if (NULL == file)
             break;
-        if (!strncmp(file->d_name, "..", 1) || !strncmp(file->d_name, "..", 2))
+        if (!strcmp(file->d_name, "..") || !strcmp(file->d_name, ".") || (flag && !strncmp(file->d_name, ".", 1)))
             continue;
         uint8_t *color = "0";
         switch (file->d_type)
@@ -82,7 +81,7 @@ int cmd_getlist(thr_dat_t *info)
         default:
             break;
         }
-        sprintf(buf, "\033[33m>>>\033[0m%d %c \033[%sm%s\033[0m", count, file_type(file->d_type), color, file->d_name);
+        sprintf(buf, "\033[33m>>>\033[0m%d\t%c \033[%sm%s\033[0m", count, file_type(file->d_type), color, file->d_name);
 
         count++;
         send_msg(buf, info);
@@ -144,7 +143,7 @@ int cmd_changedir(thr_dat_t *info, uint8_t *data)
     else
     { // successful
         strcpy(info->pwd, modPath);
-        sprintf(modPath, "working dir change to:\n\t%s", info->pwd);
+        sprintf(modPath, "working dir change to:\n\t\033[34m%s\033[0m", info->pwd);
         send_msg(modPath, info);
     }
 
@@ -200,7 +199,7 @@ int cmd_getfile(thr_dat_t *info, uint8_t *data, int flag)
     }
     send_err_code(FILE_GET_OK, basename(filePath), info);
 
-    if (flag && recv_errcode(info) != FILE_UP_OK)
+    if (flag && (recv_errcode(info) != FILE_UP_OK))
         goto ERR;
 
     int fd = open(filePath, O_RDONLY);
@@ -238,11 +237,6 @@ ERR:
 // 其后所有数据为文件内容
 int cmd_upload(thr_dat_t *info, uint8_t *data, int flag)
 {
-    if (!upload_permit)
-    {
-        send_msg("\033[31;1mServer disable upload!\033[0m", info);
-        return -1;
-    }
     char filePath[256];
     data += 8;
     if ('~' == *data) // home dir
@@ -265,7 +259,7 @@ int cmd_upload(thr_dat_t *info, uint8_t *data, int flag)
     }
     send_err_code(FILE_UP_OK, basename(filePath), info);
 
-    if (flag && recv_errcode(info) != FILE_GET_OK)
+    if (flag && (recv_errcode(info) != FILE_GET_OK))
         goto ERR;
 
     transHeader_t header;
@@ -298,11 +292,6 @@ ERR:
 // 其后数据为文件路径
 int cmd_remove(thr_dat_t *info, uint8_t *data)
 {
-    if (!remove_permit)
-    {
-        send_msg("\033[31;1mServer disable remove!\033[0m", info);
-        return -1;
-    }
 
     char filePath[256];
     data += 8;
@@ -355,7 +344,7 @@ int cmd_num_getfile(thr_dat_t *info, uint8_t *data)
     }
     send_err_code(FILE_GET_OK, basename(filePath), info);
 
-    if (SERVER && recv_errcode(info) != FILE_UP_OK)
+    if (SERVER && (recv_errcode(info) != FILE_UP_OK))
         goto ERR;
 
     int fd = open(filePath, O_RDONLY);
@@ -383,17 +372,13 @@ int cmd_num_getfile(thr_dat_t *info, uint8_t *data)
     close(fd);
     return 0;
 ERR:
+    printf("Error exit\n");
     closedir(curdir);
     return -1;
 }
 
 int cmd_num_remove(thr_dat_t *info, uint8_t *data)
 {
-    if (!remove_permit)
-    {
-        send_msg("\033[31;1mServer disable remove!\033[0m", info);
-        return -1;
-    }
 
     if (0 == *(uint64_t *)(data + 8))
     {
@@ -492,32 +477,4 @@ int cmd_exit(thr_dat_t *info, uint8_t *data)
     free(info);
     free(data);
     pthread_exit(NULL);
-}
-
-int cmd_off_upload()
-{
-    upload_permit = 0;
-    printf("upload disable!\n");
-    return 0;
-}
-
-int cmd_on_upload()
-{
-    upload_permit = 1;
-    printf("upload enable!\n");
-    return 0;
-}
-
-int cmd_off_remove()
-{
-    remove_permit = 0;
-    printf("remove disable!\n");
-    return 0;
-}
-
-int cmd_on_remove()
-{
-    remove_permit = 1;
-    printf("remove enable!\n");
-    return 0;
 }
