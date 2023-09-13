@@ -8,8 +8,14 @@ Source = $(wildcard $(srcDIR)/*.c)
 Object = $(patsubst $(srcDIR)/%.c, $(objDIR)/%.o, $(Source))
 CFLAGS = -I $(incDIR)
 
+CLI_Source = $(filter-out ./src/main.c, $(Source))
+
 #all
-all:$(Target)
+all:$(Target) cli
+
+cli: cli.c
+	$(CC) -static $^ $(CLI_Source) $(CFLAGS) -o cli -g
+
 
 #MAIN
 $(Target):$(Object)
@@ -24,5 +30,6 @@ $(objDIR)/%.o: $(srcDIR)/%.c $(Depend)
 clean:
 	rm -f $(Target)
 	rm -f $(Object)
+	rm -f cli
 
 
