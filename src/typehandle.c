@@ -32,51 +32,51 @@ int which_cmd(char *cmd)
 
 void handle_command(transHeader_t *header, uint8_t *data, thr_dat_t *info)
 {
-    PRINT_MSG("%d: command handle\n", info->fd);
+    PRINT_MSG("%d: command handle:", info->fd);
     switch (which_cmd(data))
     {
     case CMD_GETLIST:
-        send_msg("Get list Command!", info);
+        printf("Get list Command!\n");
         cmd_getlist(info);
         break;
     case CMD_GETFILE:
-        send_msg("Get File Command!", info);
+        printf("Get File Command!\n");
         cmd_getfile(info, data, SERVER);
         break;
     case CMD_NUM_GETFILE:
-        send_msg("Get File by number Command!", info);
+        printf("Get File by number Command!\n");
         cmd_num_getfile(info, data);
         break;
     case CMD_UPLOAD:
-        send_msg("Upload File Command!", info);
+        printf("Upload File Command!\n");
         cmd_upload(info, data, SERVER);
         break;
     case CMD_CHANGEDIR:
-        send_msg("Change Dir Command!", info);
+        printf("Change Dir Command!\n");
         cmd_changedir(info, data);
         break;
     case CMD_NUM_CHANGEDIR:
-        send_msg("Change Dir by num Command!", info);
+        printf("Change Dir by num Command!\n");
         cmd_num_changedir(info, data);
         break;
     case CMD_PWD:
-        send_msg("Pwd Command!", info);
+        printf("Pwd Command!\n");
         cmd_pwd(info);
         break;
     case CMD_REMOVE:
-        send_msg("Remove Command!", info);
+        printf("Remove Command!\n");
         cmd_remove(info, data);
         break;
     case CMD_NUM_REMOVE:
-        send_msg("Remove by num Command", info);
+        printf("Remove by num Command");
         cmd_num_remove(info, data);
         break;
     case CMD_EXIT:
-        send_msg("Exit Command!", info);
+        printf("Exit Command!\n");
         cmd_exit(info, data);
         break;
     default:
-        send_msg("Error Coommand!", info);
+        printf("Error Command!\n");
         break;
     }
     // get list

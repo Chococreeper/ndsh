@@ -18,7 +18,7 @@ CLI_Source = $(filter-out ./src/main.c, $(Source))
 all:$(Target) $(Target_CLI)
 
 $(Target_CLI): $(CLI_Source)
-	$(CC) $(CLI_Source) $(CFLAGS) -o $@ -g
+	$(CC) $(CLI_Source) $(CFLAGS) -o $@
 
 
 #MAIN

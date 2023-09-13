@@ -105,7 +105,7 @@ int sock_init(char *ip, __uint16_t port)
 }
 
 // 客户端处理函数
-void *cli_task(thr_dat_t *dat)
+void *cli_task(thr_dat_t *info)
 {
     transHeader_t header;
 
@@ -114,22 +114,24 @@ void *cli_task(thr_dat_t *dat)
     uint8_t *recvData = NULL;
     uint64_t DataMemSize = 0;
 
-    PRINT_MSG("New Connect From:\n");
-    PRINT_MSG("\t%s: %d\n", inet_ntoa(dat->cliaddr.sin_addr), ntohs(dat->cliaddr.sin_port));
+    PRINT_MSG("\033[32mNew Connect <%d> From:\033[0m\n", info->fd);
+    PRINT_MSG("\t%s: %d\n", inet_ntoa(info->cliaddr.sin_addr), ntohs(info->cliaddr.sin_port));
+
+    send_msg("\033[32;1mWelcome!\033[0m", info);
 
     while (1)
     {
-        recv(dat->fd, &header, sizeof(header), MSG_WAITALL);
+        recv(info->fd, &header, sizeof(header), MSG_WAITALL);
         if (!header_types_is_ok(&header))
             break;
-        retv = recv_cli_data(&recvData, &DataMemSize, &header, dat, DATA_HEAP);
+        retv = recv_cli_data(&recvData, &DataMemSize, &header, info, DATA_HEAP);
         switch (retv)
         {
         case ERR_TIMEOUT:
-            cmd_exit(dat, recvData);
+            cmd_exit(info, recvData);
             return NULL;
         case ERR_DISCONNECT:
-            cmd_exit(dat, recvData);
+            cmd_exit(info, recvData);
             return NULL;
         default:
             break;
@@ -138,13 +140,13 @@ void *cli_task(thr_dat_t *dat)
         switch (header.types & 0xffff)
         {
         case TYPE_CMD:
-            handle_command(&header, recvData, dat);
+            handle_command(&header, recvData, info);
             break;
         case TYPE_MSG:
-            handle_message(&header, recvData, dat);
+            handle_message(&header, recvData, info);
             break;
         case TYPE_RES:
-            handle_respond(&header, recvData, dat);
+            handle_respond(&header, recvData, info);
             break;
         default:
             break;
@@ -153,7 +155,16 @@ void *cli_task(thr_dat_t *dat)
         recvData = NULL;
         DataMemSize = 0;
     }
-    close(dat->fd);
+    close(info->fd);
+}
+
+static void help()
+{
+    printf("quit --  quit Server\n\n");
+    printf("upload-off --  disable upload\n");
+    printf("upload-on  --  enable upload\n");
+    printf("remove-off --  disable remove\n");
+    printf("remove-on  -- enable remove\n");
 }
 
 // 输入处理函数
@@ -162,8 +173,20 @@ void *term_task(void *arg)
     while (1)
     {
         sem_wait(&term_task_sem[1]);
-        if (!strncasecmp((char *)arg, "quit", 4))
+        if (!strncasecmp((char *)arg, "quit", 4) || !strncasecmp((char *)arg, "exit", 4))
             exit(0);
+        else if (!strncasecmp((char *)arg, "upload-off", 10))
+            cmd_off_upload();
+        else if (!strncasecmp((char *)arg, "upload-on", 9))
+            cmd_on_upload();
+        else if (!strncasecmp((char *)arg, "remove-off", 10))
+            cmd_off_remove();
+        else if (!strncasecmp((char *)arg, "remove-on", 9))
+            cmd_on_remove();
+        else if (!strncasecmp((char *)arg, "?", 9))
+            help();
+        else
+            printf("Error input!\n");
         sem_post(&term_task_sem[0]);
     }
 }

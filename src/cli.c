@@ -136,8 +136,7 @@ int input(int fd)
 
         send_data(&header, data, &info);
     }
-
-    if (!strncmp(cmd, "pwd", 3))
+    else if (!strncmp(cmd, "pwd", 3))
     {
 
         char data[8] = "PRIWKDIR";
@@ -146,8 +145,7 @@ int input(int fd)
 
         send_data(&header, data, &info);
     }
-
-    if (!strncmp(cmd, "exit", 4))
+    else if (!strncmp(cmd, "exit", 4))
     {
 
         char data[8] = "EXIT";
@@ -156,8 +154,7 @@ int input(int fd)
 
         send_data(&header, data, &info);
     }
-
-    if (!strncmp(cmd, "cd", 2))
+    else if (!strncmp(cmd, "cd", 2))
     {
         char data[256] = "CHNGEDIR";
         fgets(data + 8, sizeof(data) - 8, stdin);
@@ -168,8 +165,7 @@ int input(int fd)
 
         send_data(&header, data, &info);
     }
-
-    if (!strncmp(cmd, "rm", 2))
+    else if (!strncmp(cmd, "rm", 2))
     {
         char data[256] = "REMOVE";
         fgets(data + 8, sizeof(data) - 8, stdin);
@@ -180,8 +176,7 @@ int input(int fd)
 
         send_data(&header, data, &info);
     }
-
-    if (!strncmp(cmd, "msg", 3))
+    else if (!strncmp(cmd, "msg", 3))
     {
         char data[256];
         fgets(data, sizeof(data), stdin);
@@ -189,8 +184,7 @@ int input(int fd)
 
         send_msg(data, &info);
     }
-
-    if (!strncmp(cmd, "get", 3) || !strncmp(cmd, "pull", 4))
+    else if (!strncmp(cmd, "get", 3) || !strncmp(cmd, "pull", 4))
     {
         char data[256] = "GETFILE";
         fgets(data + 8, sizeof(data) - 8, stdin);
@@ -200,8 +194,7 @@ int input(int fd)
         header.datalen = 8 + strlen(data + 8) + 1;
         send_data(&header, data, &info);
     }
-
-    if (!strncmp(cmd, "nget", 4) || !strncmp(cmd, "npull", 5))
+    else if (!strncmp(cmd, "nget", 4) || !strncmp(cmd, "npull", 5))
     {
         char data[256] = "NGETFILE";
         fgets(data + 8, sizeof(data) - 8, stdin);
@@ -212,8 +205,7 @@ int input(int fd)
         header.datalen = 8 + 8;
         send_data(&header, data, &info);
     }
-
-    if (!strncmp(cmd, "ncd", 3))
+    else if (!strncmp(cmd, "ncd", 3))
     {
         char data[256] = "NCHNGDIR";
         fgets(data + 8, sizeof(data) - 8, stdin);
@@ -224,8 +216,7 @@ int input(int fd)
         header.datalen = 8 + 8;
         send_data(&header, data, &info);
     }
-
-    if (!strncmp(cmd, "nrm", 3))
+    else if (!strncmp(cmd, "nrm", 3))
     {
         char data[256] = "NREMOVE";
         fgets(data + 8, sizeof(data) - 8, stdin);
@@ -236,8 +227,7 @@ int input(int fd)
         header.datalen = 8 + 8;
         send_data(&header, data, &info);
     }
-
-    if (!strncmp(cmd, "push", 4))
+    else if (!strncmp(cmd, "push", 4) || !strncmp(cmd, "upload", 6))
     {
         char data[256] = "UPLOAD";
         scanf("%s", data + 8);
@@ -246,6 +236,22 @@ int input(int fd)
         header.types = (HEADER_CODE << 32) | TYPE_CMD;
         header.datalen = 8 + strlen(data + 8) + 1;
         send_data(&header, data, &info);
+    }
+    else if (!strncmp(cmd, "help", 4))
+    {
+        puts("\033[32mls\033[0m -- list current dir and flush file list");
+        puts("\033[32mpwd\033[0m -- printf working dir");
+        puts("\033[32mcd\033[0m <dirname> -- change dir");
+        puts("\033[32mncd\033[0m <dirnum> -- change dir by number(get num from 'ls' command)");
+        puts("\033[32mget\033[0m <filename> -- download by file name");
+        puts("\033[32mnget\033[0m <filenum> -- download by file number(get num from 'ls' command)");
+        puts("\033[32mrm\033[0m <filename> -- remove by file name");
+        puts("\033[32mnrm\033[0m <filenum> -- remove by file numbere(get num from 'ls' command)");
+        puts("\033[32mexit\033[0m -- disconnect server");
+    }
+    else
+    {
+        printf("\033[31merror command!\033[0m\n");
     }
 
     return 0;

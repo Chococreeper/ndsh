@@ -21,7 +21,13 @@
 
 // 文件夹seek
 #define LIST_LEN 1024
+
+// 文件序号表
 static long *filelist[1024] = {NULL};
+
+// 上传与下载许可
+static int upload_permit = 0;
+static int remove_permit = 0;
 
 char file_type(unsigned char type)
 {
@@ -65,7 +71,18 @@ int cmd_getlist(thr_dat_t *info)
             break;
         if (!strncmp(file->d_name, "..", 1) || !strncmp(file->d_name, "..", 2))
             continue;
-        sprintf(buf, ">>>%d %c %s", count, file_type(file->d_type), file->d_name);
+        uint8_t *color = "0";
+        switch (file->d_type)
+        {
+        case DT_DIR:
+            color = "34";
+            break;
+        case DT_REG:
+            color = "0";
+        default:
+            break;
+        }
+        sprintf(buf, "\033[33m>>>\033[0m%d %c \033[%sm%s\033[0m", count, file_type(file->d_type), color, file->d_name);
 
         count++;
         send_msg(buf, info);
@@ -146,8 +163,6 @@ int cmd_changedir(thr_dat_t *info, uint8_t *data)
     }
     closedir(curdir);
     return 0;
-
-    return 0;
 }
 
 int cmd_pwd(thr_dat_t *info)
@@ -206,6 +221,7 @@ int cmd_getfile(thr_dat_t *info, uint8_t *data, int flag)
         header.datalen += 8;
         send_data(&header, filedata, info);
     }
+    send_msg("\033[32;1mComplete\033[0m", info);
     free(filedata);
     close(fd);
     return 0;
@@ -222,6 +238,11 @@ ERR:
 // 其后所有数据为文件内容
 int cmd_upload(thr_dat_t *info, uint8_t *data, int flag)
 {
+    if (!upload_permit)
+    {
+        send_msg("\033[31;1mServer disable upload!\033[0m", info);
+        return -1;
+    }
     char filePath[256];
     data += 8;
     if ('~' == *data) // home dir
@@ -261,6 +282,8 @@ int cmd_upload(thr_dat_t *info, uint8_t *data, int flag)
         if (FILE_END == filedata->flag)
             break;
     }
+    send_msg("\033[32;1mComplete\033[0m", info);
+
     free(filedata);
     close(fd);
     return 0;
@@ -275,6 +298,12 @@ ERR:
 // 其后数据为文件路径
 int cmd_remove(thr_dat_t *info, uint8_t *data)
 {
+    if (!remove_permit)
+    {
+        send_msg("\033[31;1mServer disable remove!\033[0m", info);
+        return -1;
+    }
+
     char filePath[256];
     data += 8;
     if ('~' == *data) // home dir
@@ -296,6 +325,7 @@ int cmd_remove(thr_dat_t *info, uint8_t *data)
         send_err_code(FILE_NOT_EXIST, strerror(errno), info);
         return -1;
     }
+    send_msg("removed", info);
     return 0;
 }
 
@@ -346,6 +376,8 @@ int cmd_num_getfile(thr_dat_t *info, uint8_t *data)
         header.datalen += 8;
         send_data(&header, filedata, info);
     }
+
+    send_msg("\033[32;1mComplete\033[0m", info);
     free(filedata);
     closedir(curdir);
     close(fd);
@@ -357,6 +389,12 @@ ERR:
 
 int cmd_num_remove(thr_dat_t *info, uint8_t *data)
 {
+    if (!remove_permit)
+    {
+        send_msg("\033[31;1mServer disable remove!\033[0m", info);
+        return -1;
+    }
+
     if (0 == *(uint64_t *)(data + 8))
     {
         send_err_code(NUM_ERROR, "Error Number!", info);
@@ -443,6 +481,7 @@ ERR:
 
 int cmd_exit(thr_dat_t *info, uint8_t *data)
 {
+    printf("\033[31m%d disconnect!\033[0m\n", info->fd);
     send_err_code(DISCONNECT, "disconnected!", info);
     if (NULL != filelist[info->fd])
     {
@@ -453,4 +492,32 @@ int cmd_exit(thr_dat_t *info, uint8_t *data)
     free(info);
     free(data);
     pthread_exit(NULL);
+}
+
+int cmd_off_upload()
+{
+    upload_permit = 0;
+    printf("upload disable!\n");
+    return 0;
+}
+
+int cmd_on_upload()
+{
+    upload_permit = 1;
+    printf("upload enable!\n");
+    return 0;
+}
+
+int cmd_off_remove()
+{
+    remove_permit = 0;
+    printf("remove disable!\n");
+    return 0;
+}
+
+int cmd_on_remove()
+{
+    remove_permit = 1;
+    printf("remove enable!\n");
+    return 0;
 }
