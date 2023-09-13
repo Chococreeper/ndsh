@@ -201,6 +201,42 @@ int input(int fd)
         send_data(&header, data, &info);
     }
 
+    if (!strncmp(cmd, "nget", 4) || !strncmp(cmd, "npull", 5))
+    {
+        char data[256] = "NGETFILE";
+        fgets(data + 8, sizeof(data) - 8, stdin);
+        uint64_t code = atol(data + 8);
+        *((uint64_t *)(data + 8)) = code;
+
+        header.types = (HEADER_CODE << 32) | TYPE_CMD;
+        header.datalen = 8 + 8;
+        send_data(&header, data, &info);
+    }
+
+    if (!strncmp(cmd, "ncd", 3))
+    {
+        char data[256] = "NCHNGDIR";
+        fgets(data + 8, sizeof(data) - 8, stdin);
+        uint64_t code = atol(data + 8);
+        *((uint64_t *)(data + 8)) = code;
+
+        header.types = (HEADER_CODE << 32) | TYPE_CMD;
+        header.datalen = 8 + 8;
+        send_data(&header, data, &info);
+    }
+
+    if (!strncmp(cmd, "nrm", 3))
+    {
+        char data[256] = "NREMOVE";
+        fgets(data + 8, sizeof(data) - 8, stdin);
+        uint64_t code = atol(data + 8);
+        *((uint64_t *)(data + 8)) = code;
+
+        header.types = (HEADER_CODE << 32) | TYPE_CMD;
+        header.datalen = 8 + 8;
+        send_data(&header, data, &info);
+    }
+
     if (!strncmp(cmd, "push", 4))
     {
         char data[256] = "UPLOAD";

@@ -1,20 +1,24 @@
 Target = main
+Target_CLI = cli
 CC = gcc
 incDIR = ./inc
 srcDIR = ./src
 objDIR = ./obj
 Depend = $(wildcard $(incDIR)/*.h)
 Source = $(wildcard $(srcDIR)/*.c)
-Object = $(patsubst $(srcDIR)/%.c, $(objDIR)/%.o, $(Source))
 CFLAGS = -I $(incDIR)
+
+SER_Source = $(filter-out ./src/cli.c, $(Source))
+Object = $(patsubst $(srcDIR)/%.c, $(objDIR)/%.o, $(SER_Source))
+
 
 CLI_Source = $(filter-out ./src/main.c, $(Source))
 
 #all
-all:$(Target) cli
+all:$(Target) $(Target_CLI)
 
-cli: cli.c
-	$(CC) -static $^ $(CLI_Source) $(CFLAGS) -o cli -g
+$(Target_CLI): $(CLI_Source)
+	$(CC) $(CLI_Source) $(CFLAGS) -o $@ -g
 
 
 #MAIN
@@ -30,6 +34,6 @@ $(objDIR)/%.o: $(srcDIR)/%.c $(Depend)
 clean:
 	rm -f $(Target)
 	rm -f $(Object)
-	rm -f cli
+	rm -f $(Target_CLI)
 
 

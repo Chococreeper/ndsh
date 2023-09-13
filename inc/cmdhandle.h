@@ -15,6 +15,10 @@ int cmd_changedir(thr_dat_t *info, uint8_t *data);
 int cmd_getfile(thr_dat_t *info, uint8_t *data, int flag);
 int cmd_upload(thr_dat_t *info, uint8_t *data, int flag);
 
+int cmd_num_getfile(thr_dat_t *info, uint8_t *data);
+int cmd_num_changedir(thr_dat_t *info, uint8_t *data);
+int cmd_num_remove(thr_dat_t *info, uint8_t *data);
+
 int cmd_remove(thr_dat_t *info, uint8_t *data);
 int cmd_exit(thr_dat_t *info, uint8_t *data);
 

@@ -58,10 +58,13 @@ enum cmd
     CMD_UNKNOW,
     CMD_GETLIST = 10,
     CMD_GETFILE,
+    CMD_NUM_GETFILE,
     CMD_UPLOAD,
     CMD_CHANGEDIR,
+    CMD_NUM_CHANGEDIR,
     CMD_PWD,
     CMD_REMOVE,
+    CMD_NUM_REMOVE,
     CMD_EXIT
 };
 
@@ -108,6 +111,7 @@ typedef struct
 #define FILE_UP_OK 0x08
 #define FILE_NOT_EXIST 0x00000001
 #define FILE_EXIST 0x0000000F
+#define NUM_ERROR 0x0000F100
 #define DISCONNECT 0xFFFFFFFF
 
 int sock_init(char *ip, __uint16_t port);

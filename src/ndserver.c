@@ -126,12 +126,10 @@ void *cli_task(thr_dat_t *dat)
         switch (retv)
         {
         case ERR_TIMEOUT:
-            free(recvData);
-            close(dat->fd);
+            cmd_exit(dat, recvData);
             return NULL;
         case ERR_DISCONNECT:
-            close(dat->fd);
-            free(recvData);
+            cmd_exit(dat, recvData);
             return NULL;
         default:
             break;
