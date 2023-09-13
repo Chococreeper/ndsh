@@ -6,7 +6,7 @@ srcDIR = ./src
 objDIR = ./obj
 Depend = $(wildcard $(incDIR)/*.h)
 Source = $(wildcard $(srcDIR)/*.c)
-CFLAGS = -I $(incDIR) -static
+CFLAGS = -I $(incDIR) -static -pthread
 
 SER_Source = $(filter-out ./src/cli.c, $(Source))
 Object = $(patsubst $(srcDIR)/%.c, $(objDIR)/%.o, $(SER_Source))
