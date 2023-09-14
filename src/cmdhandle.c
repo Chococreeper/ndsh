@@ -110,6 +110,12 @@ void rm_relative_path(char *path)
         }
         memmove(substr_f, substr + 2, strlen(substr + 2) + 1);
     }
+    while (substr = strstr(path, "/."))
+    {
+        substr_f = substr + 2;
+        memmove(substr, substr_f, strlen(substr_f) + 1);
+    }
+
     if (*(path += (strlen(path) - 1)) == '/')
         *path = '\0';
 }
