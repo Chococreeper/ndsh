@@ -6,7 +6,7 @@ srcDIR = ./src
 objDIR = ./obj
 Depend = $(wildcard $(incDIR)/*.h)
 Source = $(wildcard $(srcDIR)/*.c)
-CFLAGS = -I $(incDIR) -static -pthread
+CFLAGS = -I $(incDIR) -static -pthread -w
 
 SER_Source = $(filter-out ./src/cli.c, $(Source))
 Object = $(patsubst $(srcDIR)/%.c, $(objDIR)/%.o, $(SER_Source))
@@ -18,7 +18,7 @@ CLI_Source = $(filter-out ./src/main.c, $(Source))
 all:$(Target) $(Target_CLI)
 
 $(Target_CLI): $(CLI_Source)
-	$(CC) $(CLI_Source) $(CFLAGS) -o $@ -g
+	$(CC) $(CLI_Source) $(CFLAGS) -o $@ -g 
 
 
 #MAIN

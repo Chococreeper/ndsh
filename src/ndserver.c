@@ -182,6 +182,17 @@ static void help()
     printf("remove-on  -- enable remove\n");
 }
 
+void modify_passwd(char *passwd)
+{
+    if (strlen(passwd) < 6)
+    {
+        printf("\033[31;1mpassword too short, at least 6 char.\033[0m\n");
+        return;
+    }
+    strcpy(password, passwd);
+    printf("\033[32;1mPassword change to: %s", password);
+}
+
 // 输入处理函数
 void *term_task(void *arg)
 {
@@ -198,10 +209,12 @@ void *term_task(void *arg)
             cmd_off_remove();
         else if (!strncasecmp((char *)arg, "remove-on", 9))
             cmd_on_remove();
+        else if (!strncasecmp((char *)arg, "passwd ", 7))
+            modify_passwd(arg + 7);
         else if (!strncasecmp((char *)arg, "?", 9))
             help();
         else
-            printf("Error input!\n");
+            printf("\033[31;1mError input!\033[0m\n");
         sem_post(&term_task_sem[0]);
     }
 }

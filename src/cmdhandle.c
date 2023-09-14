@@ -45,7 +45,7 @@ int cmd_getlist(thr_dat_t *info, int flag)
 {
     DIR *curdir = opendir(info->pwd);
     struct dirent *file;
-    char buf[256];
+    char buf[512];
 
     if (curdir == NULL)
     {
@@ -110,7 +110,7 @@ void rm_relative_path(char *path)
         }
         memmove(substr_f, substr + 2, strlen(substr + 2) + 1);
     }
-    while (substr = strstr(path, "/."))
+    while (substr = strstr(path, "/./"))
     {
         substr_f = substr + 2;
         memmove(substr, substr_f, strlen(substr_f) + 1);
@@ -320,7 +320,7 @@ int cmd_remove(thr_dat_t *info, uint8_t *data)
         send_err_code(FILE_NOT_EXIST, strerror(errno), info);
         return -1;
     }
-    send_msg("removed", info);
+    send_msg("\033[32;1mremoved\033[0m", info);
     return 0;
 }
 
@@ -408,6 +408,7 @@ int cmd_num_remove(thr_dat_t *info, uint8_t *data)
         send_err_code(FILE_NOT_EXIST, strerror(errno), info);
         goto ERR;
     }
+    send_msg("\033[32;1mremoved\033[0m", info);
     closedir(curdir);
     return 0;
 ERR:

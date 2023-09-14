@@ -93,7 +93,7 @@ void handle_command(transHeader_t *header, uint8_t *data, thr_dat_t *info)
             send_msg("\033[31;1mServer disable remove!\033[0m", info);
             return;
         }
-        printf("Remove by num Command");
+        printf("Remove by num Command\n");
         cmd_num_remove(info, data);
         break;
     case CMD_EXIT:
