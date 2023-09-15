@@ -1,4 +1,6 @@
 /obj/
 
+/.vscode/
+
 main
 cli
