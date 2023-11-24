@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include "cmdhandle.h"
 #include "transhandle.h"
 
